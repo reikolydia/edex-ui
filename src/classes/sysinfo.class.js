@@ -114,15 +114,15 @@ class Sysinfo {
         if (uptime.hours.toString().length !== 2) uptime.hours = "0"+uptime.hours;
         if (uptime.minutes.toString().length !== 2) uptime.minutes = "0"+uptime.minutes;
 
-        document.querySelector("#mod_sysinfo > div:nth-child(2) > h2").innerHTML = uptime.days+":"+uptime.hours+":"+uptime.minutes;
+        document.querySelector("#mod_sysinfo > div:nth-child(2) > h2").innerHTML = uptime.days + '<span style="opacity:0.5;">d</span>' + uptime.hours + '<span style="opacity:0.5;">:</span>' + uptime.minutes;
     }
     updateBattery() {
         window.si.battery().then(bat => {
             let indicator = document.querySelector("#mod_sysinfo > div:last-child > h2");
-            if (bat.hasbattery) {
-                if (bat.ischarging) {
+            if (bat.hasBattery) {
+                if (bat.isCharging) {
                     indicator.innerHTML = "CHARGE";
-                } else if (bat.acconnected || bat.timeremaining === -1) {
+                } else if (bat.acConnected) {
                     indicator.innerHTML = "WIRED";
                 } else {
                     indicator.innerHTML = bat.percent+"%";
