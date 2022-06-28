@@ -139,8 +139,8 @@ class Keyboard {
 
                         // Keep focus on the terminal
                         if (window.keyboard.linkedToTerm) window.term[window.currentTerm].term.focus();
-
-                        window.audioManager.granted.play();
+                        if (this.container.dataset.passwordMode == "false")
+                            window.audioManager.granted.play();
                         e.preventDefault();
                     };
                     key.onmouseup = () => {
@@ -180,8 +180,8 @@ class Keyboard {
 
                         // Keep focus on the terminal
                         if (window.keyboard.linkedToTerm) window.term[window.currentTerm].term.focus();
-
-                        window.audioManager.stdin.play();
+                        if(this.container.dataset.passwordMode == "false")
+                            window.audioManager.stdin.play();
                         e.preventDefault();
                     };
                     key.onmouseup = e => {
@@ -220,7 +220,8 @@ class Keyboard {
         this.container.addEventListener("touchstart", e => {
             e.preventDefault();
             for (let i = 0; i < e.changedTouches.length; i++) {
-                let key = e.changedTouches[i].target.offsetParent;
+                let key = e.changedTouches[i].target.parentElement;
+                if (key.tagName === 'svg') key = key.parentElement;
                 if (key.getAttribute("class").startsWith("keyboard_key")) {
                     key.setAttribute("class", key.getAttribute("class")+" active");
                     key.onmousedown({preventDefault: () => {return true}});
@@ -236,7 +237,8 @@ class Keyboard {
         let dropKeyTouchHandler = e => {
             e.preventDefault();
             for (let i = 0; i < e.changedTouches.length; i++) {
-                let key = e.changedTouches[i].target.offsetParent;
+                let key = e.changedTouches[i].target.parentElement;
+                if (key.tagName === 'svg') key = key.parentElement;
                 if (key.getAttribute("class").startsWith("keyboard_key")) {
                     key.setAttribute("class", key.getAttribute("class").replace("active", ""));
                     key.onmouseup({preventDefault: () => {return true}});
@@ -310,7 +312,8 @@ class Keyboard {
 
             // See #516
             if (e.repeat === false || (e.repeat === true && !e.code.startsWith('Shift') && !e.code.startsWith('Alt') && !e.code.startsWith('Control') && !e.code.startsWith('Caps'))) {
-                window.audioManager.stdin.play();
+                if(this.container.dataset.passwordMode == "false")
+                    window.audioManager.stdin.play();
             }
         };
 
@@ -321,7 +324,7 @@ class Keyboard {
             if (e.key === "Control" && e.getModifierState("AltGraph")) return;
 
             // See #440
-		    if (e.code === "ControlLeft" || e.code === "ControlRight") this.container.dataset.isCtrlOn = false;
+            if (e.code === "ControlLeft" || e.code === "ControlRight") this.container.dataset.isCtrlOn = false;
             if (e.code === "ShiftLeft" || e.code === "ShiftRight") this.container.dataset.isShiftOn = false;
             if (e.code === "AltLeft" || e.code === "AltRight") this.container.dataset.isAltOn = false;
 
@@ -343,9 +346,8 @@ class Keyboard {
                 }, 100);
             }
 
-            if (e.key === "Enter") {
+            if(this.container.dataset.passwordMode == "false" && e.key === "Enter")
                 window.audioManager.granted.play();
-            }
         };
 
         window.addEventListener("blur", () => {
@@ -518,7 +520,7 @@ class Keyboard {
                 window.term[window.currentTerm].writelr("");
             } else {
                 document.activeElement.dispatchEvent(new CustomEvent("change", {detail: "enter" }));
-			}
+            }
             return true;
         }
 
@@ -526,12 +528,12 @@ class Keyboard {
         if (window.keyboard.linkedToTerm) {
             window.term[window.currentTerm].write(cmd);
         } else {
-			let isDelete = false;
+            let isDelete = false;
             if (typeof document.activeElement.value !== "undefined") {
                 switch(cmd) {
                     case "":
                         document.activeElement.value = document.activeElement.value.slice(0, -1);
-				        isDelete = true;
+                        isDelete = true;
                         break;
                     case "OD":
                         document.activeElement.selectionStart--;
@@ -549,8 +551,8 @@ class Keyboard {
                         }
                 }
             }
-		    // Emulate oninput events
-		    document.activeElement.dispatchEvent(new CustomEvent("input", {detail: ((isDelete)? "delete" : "insert") }));
+            // Emulate oninput events
+            document.activeElement.dispatchEvent(new CustomEvent("input", {detail: ((isDelete)? "delete" : "insert") }));
             document.activeElement.focus();
         }
     }
@@ -558,6 +560,7 @@ class Keyboard {
         let d = this.container.dataset.passwordMode;
         (d === "true") ? d = "false" : d = "true";
         this.container.dataset.passwordMode = d;
+        window.passwordMode = d;
         return d;
     }
     addCircum(char) {

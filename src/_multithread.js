@@ -4,7 +4,10 @@ if (cluster.isMaster) {
     const electron = require("electron");
     const ipc = electron.ipcMain;
     const signale = require("signale");
-    const numCPUs = require("os").cpus().length - 1; // Leave a core available for the renderer process
+    // Also, leave a core available for the renderer process
+    const osCPUs = require("os").cpus().length - 1;
+    // See #904
+    const numCPUs = (osCPUs > 7) ? 7 : osCPUs;
 
     const si = require("systeminformation");
 
